@@ -7,20 +7,99 @@
   <style>
     body {
       margin: 0;
-      font-family: sans-serif;
-      background-color: #f8f8f8;
-      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f0f0;
     }
+
+    nav {
+      background-color: #ffffff;
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+      text-align: center;
+    }
+
     canvas {
       display: block;
-      margin: 0 auto;
+      margin: 20px auto;
       background-color: #fff;
       border: 2px solid #333;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .description {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+      color: #333;
+    }
+
+    .description h2 {
+      margin-bottom: 10px;
+    }
+
+    .description p {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    /* Navigation styling */
+    .navbar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .navbar .nav-item {
+      list-style: none;
+      margin: 0 15px;
+    }
+
+    .navbar .nav-link {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      padding: 12px;
+    }
+
+    .navbar .nav-link:hover {
+      color: #007BFF;
     }
   </style>
 </head>
 <body>
+  <!-- Navigation-->
+  <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+    <div class="container px-4 px-lg-5">
+      <a class="navbar-brand" href="index.html"></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+        aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        Menu
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ms-auto py-4 py-lg-0">
+          <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">Resume</a></li>
+          <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About Me</a></li>
+          <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="scratch.html">Interests</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="description">
+    <h2>Mouse Jump Game</h2>
+    <p>
+      Help the mouse survive by jumping over mousetraps! Press the <strong>spacebar</strong> to jump. The longer you stay alive, the higher your score climbs.
+      It's a fun twist on the classic no-internet dinosaur game — but with cheese and danger!
+    </p>
+  </div>
+
   <canvas id="gameCanvas" width="800" height="300"></canvas>
+
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
@@ -66,7 +145,6 @@
         }
       });
 
-      // Remove off-screen traps
       traps = traps.filter(trap => trap.x + trap.width > 0);
     }
 
@@ -82,7 +160,7 @@
     function jump() {
       if (!isJumping) {
         isJumping = true;
-        velocity = -15; // higher jump
+        velocity = -15;
       }
     }
 
@@ -96,7 +174,6 @@
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Mouse physics
       velocity += gravity;
       mouse.y += velocity;
 
@@ -117,7 +194,7 @@
       requestAnimationFrame(update);
     }
 
-    setInterval(spawnTrap, 1500); // spawn traps
+    setInterval(spawnTrap, 1500);
     document.addEventListener("keydown", e => {
       if (e.code === "Space") jump();
     });
