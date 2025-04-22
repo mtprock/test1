@@ -2,133 +2,127 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mouse Jump Game</title>
   <style>
     body {
       margin: 0;
       font-family: sans-serif;
-      background: #f4f4f4;
+      background-color: #f8f8f8;
       overflow: hidden;
     }
     canvas {
       display: block;
       margin: 0 auto;
-      background: #87CEEB;
-      border-bottom: 5px solid #555;
+      background-color: #fff;
+      border: 2px solid #333;
     }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="200"></canvas>
-
+  <canvas id="gameCanvas" width="800" height="300"></canvas>
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
     let mouse = {
       x: 50,
-      y: 160,
+      y: 250,
       width: 40,
       height: 40,
-      velocityY: 0,
-      gravity: 1.5,
-      jumpForce: -15,
-      isJumping: false
+      color: "#666"
     };
 
+    let gravity = 0.7;
+    let velocity = 0;
+    let isJumping = false;
+
     let traps = [];
-    let trapTimer = 0;
-    let gameSpeed = 5;
     let score = 0;
-    let isGameOver = false;
+    let gameOver = false;
 
     function drawMouse() {
-      ctx.fillStyle = "brown";
+      ctx.fillStyle = mouse.color;
       ctx.fillRect(mouse.x, mouse.y, mouse.width, mouse.height);
     }
 
     function drawTrap(trap) {
-      ctx.fillStyle = "gray";
+      ctx.fillStyle = "red";
       ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
     }
 
-    function handleMouse() {
-      mouse.velocityY += mouse.gravity;
-      mouse.y += mouse.velocityY;
-      if (mouse.y > 160) {
-        mouse.y = 160;
-        mouse.velocityY = 0;
-        mouse.isJumping = false;
-      }
-    }
+    function updateTraps() {
+      traps.forEach(trap => {
+        trap.x -= 5;
 
-    function handleTraps() {
-      if (trapTimer <= 0) {
-        traps.push({
-          x: 800,
-          y: 170,
-          width: 30,
-          height: 30
-        });
-        trapTimer = Math.random() * 80 + 80;
-      } else {
-        trapTimer--;
-      }
-
-      for (let i = 0; i < traps.length; i++) {
-        traps[i].x -= gameSpeed;
-        drawTrap(traps[i]);
-
-        // Collision detection
+        // Collision check
         if (
-          mouse.x < traps[i].x + traps[i].width &&
-          mouse.x + mouse.width > traps[i].x &&
-          mouse.y < traps[i].y + traps[i].height &&
-          mouse.y + mouse.height > traps[i].y
+          mouse.x < trap.x + trap.width &&
+          mouse.x + mouse.width > trap.x &&
+          mouse.y < trap.y + trap.height &&
+          mouse.y + mouse.height > trap.y
         ) {
-          isGameOver = true;
+          gameOver = true;
         }
-      }
+      });
 
+      // Remove off-screen traps
       traps = traps.filter(trap => trap.x + trap.width > 0);
     }
 
-    function displayScore() {
-      ctx.fillStyle = "#000";
-      ctx.font = "20px Arial";
-      ctx.fillText(`Score: ${score}`, 650, 30);
+    function spawnTrap() {
+      traps.push({
+        x: canvas.width,
+        y: 260,
+        width: 20,
+        height: 40
+      });
     }
 
-    function gameLoop() {
+    function jump() {
+      if (!isJumping) {
+        isJumping = true;
+        velocity = -15; // higher jump
+      }
+    }
+
+    function update() {
+      if (gameOver) {
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "black";
+        ctx.fillText("Game Over! Score: " + score, 250, 150);
+        return;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (!isGameOver) {
-        drawMouse();
-        handleMouse();
-        handleTraps();
-        displayScore();
-        score++;
-        requestAnimationFrame(gameLoop);
-      } else {
-        ctx.fillStyle = "red";
-        ctx.font = "36px Arial";
-        ctx.fillText("Game Over!", 320, 100);
-        ctx.font = "20px Arial";
-        ctx.fillText(`Final Score: ${score}`, 340, 140);
+      // Mouse physics
+      velocity += gravity;
+      mouse.y += velocity;
+
+      if (mouse.y > 250) {
+        mouse.y = 250;
+        isJumping = false;
       }
+
+      drawMouse();
+      updateTraps();
+      traps.forEach(drawTrap);
+
+      score++;
+      ctx.font = "20px Arial";
+      ctx.fillStyle = "black";
+      ctx.fillText("Score: " + score, 10, 30);
+
+      requestAnimationFrame(update);
     }
 
-    document.addEventListener("keydown", function (e) {
-      if (e.code === "Space" && !mouse.isJumping && !isGameOver) {
-        mouse.velocityY = mouse.jumpForce;
-        mouse.isJumping = true;
-      } else if (e.code === "Space" && isGameOver) {
-        location.reload();
-      }
+    setInterval(spawnTrap, 1500); // spawn traps
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space") jump();
     });
 
-    gameLoop();
+    update();
   </script>
 </body>
 </html>
