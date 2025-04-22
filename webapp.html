@@ -2,135 +2,133 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rock Paper Scissors</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mouse Jump Game</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      text-align: center;
-      padding: 40px;
+      margin: 0;
+      font-family: sans-serif;
+      background: #f4f4f4;
+      overflow: hidden;
     }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    .choices {
-      margin: 20px 0;
-    }
-
-    .choices button {
-      font-size: 24px;
-      padding: 15px 30px;
-      margin: 10px;
-      cursor: pointer;
-      border: none;
-      border-radius: 8px;
-      transition: background-color 0.3s ease;
-    }
-
-    .choices button:hover {
-      background-color: #ddd;
-    }
-
-    .results {
-      margin-top: 30px;
-      font-size: 20px;
-    }
-
-    .play-again {
-      margin-top: 30px;
-      background-color: #28a745;
-      color: white;
-      font-size: 18px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .play-again:hover {
-      background-color: #218838;
-    }
-
-    .icon {
-      margin-right: 10px;
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #87CEEB;
+      border-bottom: 5px solid #555;
     }
   </style>
 </head>
 <body>
-    <!-- Navigation-->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light" id="mainNav">
-    <div class="container px-4 px-lg-5">
-      <a class="navbar-brand" href="index.html">My Resume</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
-        aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-        Menu
-        <i class="fas fa-bars"></i>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarResponsive">
-        <ul class="navbar-nav ms-auto py-4 py-lg-0">
-          <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="index.html">Resume</a></li>
-          <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="about.html">About Me</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-  <h1>Rock Paper Scissors</h1>
-  <div class="choices">
-    <button onclick="play('rock')"><span class="icon">🪨</span>Rock</button>
-    <button onclick="play('paper')"><span class="icon">📄</span>Paper</button>
-    <button onclick="play('scissors')"><span class="icon">✂️</span>Scissors</button>
-  </div>
-
-  <div class="results" id="results"></div>
-
-  <button class="play-again" onclick="resetGame()" style="display: none;">Play Again</button>
+  <canvas id="gameCanvas" width="800" height="200"></canvas>
 
   <script>
-    const resultsDiv = document.getElementById("results");
-    const playAgainButton = document.querySelector(".play-again");
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-    function play(playerChoice) {
-      const choices = ["rock", "paper", "scissors"];
-      const icons = {
-        rock: "🪨",
-        paper: "📄",
-        scissors: "✂️"
-      };
+    let mouse = {
+      x: 50,
+      y: 160,
+      width: 40,
+      height: 40,
+      velocityY: 0,
+      gravity: 1.5,
+      jumpForce: -15,
+      isJumping: false
+    };
 
-      const computerChoice = choices[Math.floor(Math.random() * 3)];
+    let traps = [];
+    let trapTimer = 0;
+    let gameSpeed = 5;
+    let score = 0;
+    let isGameOver = false;
 
-      let result = "";
+    function drawMouse() {
+      ctx.fillStyle = "brown";
+      ctx.fillRect(mouse.x, mouse.y, mouse.width, mouse.height);
+    }
 
-      if (playerChoice === computerChoice) {
-        result = "It's a tie!";
-      } else if (
-        (playerChoice === "rock" && computerChoice === "scissors") ||
-        (playerChoice === "paper" && computerChoice === "rock") ||
-        (playerChoice === "scissors" && computerChoice === "paper")
-      ) {
-        result = "You win!";
+    function drawTrap(trap) {
+      ctx.fillStyle = "gray";
+      ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
+    }
+
+    function handleMouse() {
+      mouse.velocityY += mouse.gravity;
+      mouse.y += mouse.velocityY;
+      if (mouse.y > 160) {
+        mouse.y = 160;
+        mouse.velocityY = 0;
+        mouse.isJumping = false;
+      }
+    }
+
+    function handleTraps() {
+      if (trapTimer <= 0) {
+        traps.push({
+          x: 800,
+          y: 170,
+          width: 30,
+          height: 30
+        });
+        trapTimer = Math.random() * 80 + 80;
       } else {
-        result = "Computer wins!";
+        trapTimer--;
       }
 
-      resultsDiv.innerHTML = `
-        <p><strong>You chose:</strong> ${icons[playerChoice]} ${playerChoice}</p>
-        <p><strong>Computer chose:</strong> ${icons[computerChoice]} ${computerChoice}</p>
-        <p><strong>Result:</strong> ${result}</p>
-      `;
+      for (let i = 0; i < traps.length; i++) {
+        traps[i].x -= gameSpeed;
+        drawTrap(traps[i]);
 
-      playAgainButton.style.display = "inline-block";
-      document.querySelectorAll(".choices button").forEach(btn => btn.disabled = true);
+        // Collision detection
+        if (
+          mouse.x < traps[i].x + traps[i].width &&
+          mouse.x + mouse.width > traps[i].x &&
+          mouse.y < traps[i].y + traps[i].height &&
+          mouse.y + mouse.height > traps[i].y
+        ) {
+          isGameOver = true;
+        }
+      }
+
+      traps = traps.filter(trap => trap.x + trap.width > 0);
     }
 
-    function resetGame() {
-      resultsDiv.innerHTML = "";
-      playAgainButton.style.display = "none";
-      document.querySelectorAll(".choices button").forEach(btn => btn.disabled = false);
+    function displayScore() {
+      ctx.fillStyle = "#000";
+      ctx.font = "20px Arial";
+      ctx.fillText(`Score: ${score}`, 650, 30);
     }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (!isGameOver) {
+        drawMouse();
+        handleMouse();
+        handleTraps();
+        displayScore();
+        score++;
+        requestAnimationFrame(gameLoop);
+      } else {
+        ctx.fillStyle = "red";
+        ctx.font = "36px Arial";
+        ctx.fillText("Game Over!", 320, 100);
+        ctx.font = "20px Arial";
+        ctx.fillText(`Final Score: ${score}`, 340, 140);
+      }
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.code === "Space" && !mouse.isJumping && !isGameOver) {
+        mouse.velocityY = mouse.jumpForce;
+        mouse.isJumping = true;
+      } else if (e.code === "Space" && isGameOver) {
+        location.reload();
+      }
+    });
+
+    gameLoop();
   </script>
 </body>
 </html>
